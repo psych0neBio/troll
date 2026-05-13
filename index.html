@@ -1,0 +1,547 @@
+
+html_code = '''<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>psych0ne</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --glitch-color-1: #ff0000;
+            --glitch-color-2: #00ffff;
+            --text-glow: rgba(255, 255, 255, 0.9);
+        }
+
+        body {
+            overflow: hidden;
+            background: #000;
+            font-family: 'Orbitron', 'Noto Sans', sans-serif;
+            cursor: none;
+        }
+
+        /* Custom cursor */
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-dot {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Video background */
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .video-container video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            filter: grayscale(100%) contrast(1.2) brightness(0.7);
+        }
+
+        .video-container img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            filter: grayscale(100%) contrast(1.2) brightness(0.7);
+        }
+
+        /* Overlay for depth */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.4) 100%),
+                linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 50%, rgba(0,0,0,0.5) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Scanlines */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1),
+                rgba(0, 0, 0, 0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            z-index: 2;
+            pointer-events: none;
+            animation: scanlineMove 8s linear infinite;
+        }
+
+        @keyframes scanlineMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        /* Vignette */
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.8) 100%);
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* Main content */
+        .content {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5vh 5vw;
+            pointer-events: none;
+        }
+
+        /* Nickname */
+        .nickname-container {
+            position: relative;
+            margin-top: 5vh;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .nickname {
+            font-size: clamp(2rem, 8vw, 6rem);
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            position: relative;
+            text-shadow: 
+                0 0 10px rgba(255,255,255,0.5),
+                0 0 40px rgba(255,255,255,0.2),
+                0 0 80px rgba(255,255,255,0.1);
+            animation: float 6s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+
+        .nickname::before,
+        .nickname::after {
+            content: 'psych0ne also dnd///';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+
+        .nickname::before {
+            color: var(--glitch-color-1);
+            animation: glitch-1 3s infinite linear alternate-reverse;
+            clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+        }
+
+        .nickname::after {
+            color: var(--glitch-color-2);
+            animation: glitch-2 2.5s infinite linear alternate-reverse;
+            clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+        }
+
+        @keyframes glitch-1 {
+            0%, 90%, 100% { transform: translate(0); }
+            10% { transform: translate(-3px, 1px); }
+            20% { transform: translate(3px, -1px); }
+            30% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            50% { transform: translate(-1px, 1px); }
+            60% { transform: translate(1px, -1px); }
+            70% { transform: translate(-3px, 2px); }
+            80% { transform: translate(3px, -2px); }
+        }
+
+        @keyframes glitch-2 {
+            0%, 90%, 100% { transform: translate(0); }
+            15% { transform: translate(3px, -1px); }
+            25% { transform: translate(-3px, 1px); }
+            35% { transform: translate(2px, 2px); }
+            45% { transform: translate(-2px, -2px); }
+            55% { transform: translate(1px, -1px); }
+            65% { transform: translate(-1px, 1px); }
+            75% { transform: translate(3px, 2px); }
+            85% { transform: translate(-3px, -2px); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(0deg); }
+            50% { transform: translateY(-15px) rotateX(2deg); }
+        }
+
+        .nickname-sub {
+            font-size: clamp(0.7rem, 2vw, 1rem);
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.5em;
+            text-align: center;
+            margin-top: 1rem;
+            text-transform: uppercase;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Bottom text */
+        .bottom-container {
+            position: relative;
+            margin-bottom: 5vh;
+            text-align: center;
+        }
+
+        .main-text {
+            font-size: clamp(2.5rem, 10vw, 8rem);
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 0.1em;
+            line-height: 1;
+            text-shadow: 
+                0 0 20px rgba(255,255,255,0.8),
+                0 0 60px rgba(255,255,255,0.4),
+                0 0 120px rgba(255,255,255,0.2);
+            position: relative;
+            animation: textShake 0.5s ease-in-out infinite;
+        }
+
+        @keyframes textShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-1px); }
+            75% { transform: translateX(1px); }
+        }
+
+        .lang-indicator {
+            font-size: clamp(0.6rem, 1.5vw, 0.9rem);
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.3em;
+            margin-top: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .lang-indicator span {
+            display: inline-block;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .lang-indicator .active {
+            color: rgba(255,255,255,0.9);
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* Noise texture */
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 4;
+            pointer-events: none;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Particle canvas */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content {
+                padding: 8vh 5vw;
+            }
+            .nickname {
+                letter-spacing: 0.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom cursor -->
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <!-- Video Background -->
+    <div class="video-container">
+        <!-- 
+            ЗАМЕНИТЕ НИЖЕ src НА ПУТЬ К ВАШЕМУ ВИДЕО
+            Например: src="video.mp4" или src="https://your-cdn.com/video.mp4"
+            Пока что используется заглушка-изображение
+        -->
+        <video autoplay muted loop playsinline poster="bg.jpg" id="bgVideo">
+            <source src="video.mp4" type="video/mp4">
+            <!-- Fallback image -->
+            <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1920&q=80" alt="background">
+        </video>
+        <!-- Fallback if video not loaded -->
+        <img src="bg.jpg" alt="background" id="bgImage" style="display:none;">
+    </div>
+
+    <!-- Effects layers -->
+    <div class="overlay"></div>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <div class="noise"></div>
+    <canvas id="particles"></canvas>
+
+    <!-- Main Content -->
+    <div class="content" id="parallaxContainer">
+        <div class="nickname-container">
+            <div class="nickname" data-speed="0.02">psych0ne also dnd///</div>
+            <div class="nickname-sub">/// enter the void ///</div>
+        </div>
+
+        <div class="bottom-container">
+            <div class="main-text" id="mainText" data-speed="0.03">ПОШЁЛ НАХУЙ</div>
+            <div class="lang-indicator">
+                <span data-lang="ru" class="active">RU</span> /
+                <span data-lang="en">EN</span> /
+                <span data-lang="pl">PL</span> /
+                <span data-lang="tr">TR</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =====================
+        // CURSOR EFFECT
+        // =====================
+        const cursor = document.querySelector('.cursor');
+        const cursorDot = document.querySelector('.cursor-dot');
+        
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX - 10 + 'px';
+            cursor.style.top = e.clientY - 10 + 'px';
+            cursorDot.style.left = e.clientX - 2 + 'px';
+            cursorDot.style.top = e.clientY - 2 + 'px';
+        });
+
+        document.addEventListener('mousedown', () => {
+            cursor.style.transform = 'scale(0.8)';
+        });
+
+        document.addEventListener('mouseup', () => {
+            cursor.style.transform = 'scale(1)';
+        });
+
+        // =====================
+        // PARALLAX EFFECT
+        // =====================
+        const container = document.getElementById('parallaxContainer');
+        const videoContainer = document.querySelector('.video-container');
+        
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.clientX) / 50;
+            const y = (window.innerHeight / 2 - e.clientY) / 50;
+            
+            videoContainer.style.transform = `translate(${x * 0.5}px, ${y * 0.5}px) scale(1.05)`;
+            
+            document.querySelectorAll('[data-speed]').forEach(el => {
+                const speed = parseFloat(el.dataset.speed);
+                el.style.transform = `translate(${x * speed * 20}px, ${y * speed * 20}px)`;
+            });
+        });
+
+        // =====================
+        // LANGUAGE SWITCHER
+        // =====================
+        const translations = {
+            ru: 'ПОШЁЛ НАХУЙ',
+            en: 'FUCK OFF',
+            pl: 'PIERDOL SIĘ',
+            tr: 'SİKTİR GİT'
+        };
+
+        const mainText = document.getElementById('mainText');
+        const langSpans = document.querySelectorAll('.lang-indicator span');
+        let currentLang = 'ru';
+        let langIndex = 0;
+        const langOrder = ['ru', 'en', 'pl', 'tr'];
+
+        function switchLanguage() {
+            langIndex = (langIndex + 1) % langOrder.length;
+            currentLang = langOrder[langIndex];
+            
+            // Glitch transition
+            mainText.style.opacity = '0';
+            mainText.style.transform = 'scale(1.1) skewX(10deg)';
+            mainText.style.filter = 'blur(10px)';
+            
+            setTimeout(() => {
+                mainText.textContent = translations[currentLang];
+                mainText.style.opacity = '1';
+                mainText.style.transform = 'scale(1) skewX(0deg)';
+                mainText.style.filter = 'blur(0px)';
+            }, 200);
+
+            // Update indicators
+            langSpans.forEach(span => {
+                span.classList.toggle('active', span.dataset.lang === currentLang);
+            });
+        }
+
+        // Auto-switch every 3 seconds
+        setInterval(switchLanguage, 3000);
+
+        // =====================
+        // PARTICLES
+        // =====================
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.life = Math.random() * 100 + 100;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life--;
+                
+                if (this.life <= 0 || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        const particles = Array.from({ length: 100 }, () => new Particle());
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // =====================
+        // RANDOM GLITCH FLICKER
+        // =====================
+        function randomGlitch() {
+            const nick = document.querySelector('.nickname');
+            nick.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`;
+            setTimeout(() => {
+                nick.style.transform = '';
+            }, 50);
+            
+            setTimeout(randomGlitch, Math.random() * 5000 + 2000);
+        }
+        randomGlitch();
+
+        // =====================
+        // VIDEO FALLBACK
+        // =====================
+        const video = document.getElementById('bgVideo');
+        const bgImage = document.getElementById('bgImage');
+        
+        video.addEventListener('error', () => {
+            video.style.display = 'none';
+            bgImage.style.display = 'block';
+        });
+
+        // Check if video loaded
+        setTimeout(() => {
+            if (video.readyState === 0) {
+                video.style.display = 'none';
+                bgImage.style.display = 'block';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>'''
+
+with open('/mnt/agents/output/index.html', 'w', encoding='utf-8') as f:
+    f.write(html_code)
+
+print("Файл создан успешно!")
